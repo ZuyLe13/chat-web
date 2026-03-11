@@ -1,9 +1,8 @@
-import React from 'react';
 import { Outlet } from 'react-router';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
-const Layout: React.FC = () => {
+const Layout = () => {
   return (
     <div className="app-container">
       <Sidebar />

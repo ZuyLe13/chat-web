@@ -11,6 +11,7 @@ interface MessageState {
 
   setActiveContact: (id: number) => void
   addMessage: (message: Messages) => void
+  deleteMessage: (id: number) => void
 }
 
 export const useMessageStore = create<MessageState>()(
@@ -33,9 +34,13 @@ export const useMessageStore = create<MessageState>()(
       addMessage: (message: Messages) => set((state) => ({
         messages: [...state.messages, message]
       })),
+
+      deleteMessage: (id: number) => set((state) => ({
+        messages: state.messages.filter((msg) => msg.id !== id)
+      })),
     }),
     {
-      name: 'chat-storage', // unique name for localStorage key
+      name: 'chat-storage',
     }
   )
 );

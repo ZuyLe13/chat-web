@@ -1,40 +1,25 @@
-import { Search, Send, MoreVertical, Phone, Video } from 'lucide-react';
+import { Search, Send, MoreVertical, Phone, Video, Copy, Trash2, X } from 'lucide-react';
 import { useMessageStore } from '../stores/useMessageStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { formatTime } from '../utils/formatTime';
 
 const DUMMY_USERS = [
-  {
-    id: 2,
-    name: 'Alice Cooper',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
-    lastMessage: 'See you tomorrow!',
-    time: '10:30 AM',
-    unread: 2
-  },
-  {
-    id: 3,
-    name: 'Bob Singer',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob',
-    lastMessage: 'Thanks for the help.',
-    time: 'Yesterday',
-    unread: 0
-  },
-  {
-    id: 4,
-    name: 'Charlie Day',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie',
-    lastMessage: 'Let me check on that...',
-    time: 'Tuesday',
-    unread: 0
-  },
-  {
-    id: 5,
-    name: 'Diana Prince',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Diana',
-    lastMessage: 'Are we still on for lunch?',
-    time: 'Monday',
-    unread: 1
-  },
+  // ... (keep DUMMY_USERS as is)
+  { id: 2, name: 'Alice Cooper', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice' },
+  { id: 3, name: 'Bob Singer', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob' },
+  { id: 4, name: 'Charlie Day', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie' },
+  { id: 5, name: 'Diana Prince', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Diana' },
+  { id: 6, name: 'Eve Adams', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Eve' },
+  { id: 7, name: 'Frank Miller', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Frank' },
+  { id: 8, name: 'Grace Hopper', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Grace' },
+  { id: 9, name: 'Hank Pym', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hank' },
+];
+
+const AUTO_REPLIES = [
+  "Hello!", "How are you?", "Sure, sounds good!", "Haha 😂",
+  "Hmm, let me think about that...", "No way! Really? 😮",
+  "I'll get back to you on that.", "Makes sense to me 👍",
+  "Absolutely!", "Okay 😄",
 ];
 
 const ChatPage = () => {
@@ -42,9 +27,33 @@ const ChatPage = () => {
     activeContactId,
     setActiveContact,
     addMessage,
+    deleteMessage,
     messages
   } = useMessageStore()
   const [message, setMessage] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, activeContactId, isTyping])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     setActiveContact(DUMMY_USERS[0].id)
@@ -56,7 +65,7 @@ const ChatPage = () => {
 
   const handleSendMessages = (text: string) => {
     const message = {
-      id: Math.floor(Math.random() * 1000),
+      id: Math.floor(Math.random() * 1000000),
       text: text,
       senderId: 1,
       receiverId: activeContactId ?? 0,
@@ -64,12 +73,46 @@ const ChatPage = () => {
       isRead: false
     }
     addMessage(message)
+
+    // Auto-reply simulation
+    const delay = 1000 + Math.random() * 1000
+    setIsTyping(true)
+    setTimeout(() => {
+      setIsTyping(false)
+      const reply = {
+        id: Math.floor(Math.random() * 1000000),
+        text: AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)],
+        senderId: activeContactId ?? 0,
+        receiverId: 1,
+        timestamp: new Date(),
+        isRead: true
+      }
+      addMessage(reply)
+    }, delay)
   }
 
-  const activeMessages = messages.filter((msg) =>
-    (msg.senderId === 1 && msg.receiverId === activeContactId) ||
-    (msg.senderId === activeContactId && msg.receiverId === 1)
-  );
+  const activeMessages = useMemo(() =>
+    messages.filter((msg) =>
+      (msg.senderId === 1 && msg.receiverId === activeContactId) ||
+      (msg.senderId === activeContactId && msg.receiverId === 1)
+    ), [messages, activeContactId]);
+
+  // Performance: memoize last messages search to avoid N^2 in sidebar render
+  const lastMessagesMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    messages.forEach(msg => {
+      const otherId = msg.senderId === 1 ? msg.receiverId : msg.senderId;
+      if (!map[otherId] || new Date(msg.timestamp) > new Date(map[otherId].timestamp)) {
+        map[otherId] = msg;
+      }
+    });
+    return map;
+  }, [messages]);
+
+  const filteredUsers = useMemo(() =>
+    DUMMY_USERS.filter(user =>
+      user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ), [searchQuery]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -84,26 +127,44 @@ const ChatPage = () => {
       <div className="chat-sidebar">
         <div className="chat-search">
           <Search className="search-icon" size={18} />
-          <input type="text" placeholder="Search users..." />
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button className="clear-search-btn" onClick={() => setSearchQuery('')}>
+              <X size={16} />
+            </button>
+          )}
         </div>
         <div className="chat-user-list">
-          {DUMMY_USERS.map((user) => (
-            <div
-              onClick={() => handleActiveContact(user.id)}
-              className={activeContactId === user.id ? 'chat-user-item active' : 'chat-user-item'}
-              key={user.id}
-            >
-              <img src={user.avatar} alt={user.name} />
-              <div className="chat-user-info">
-                <h4>{user.name}</h4>
-                <p>{user.lastMessage}</p>
+          {filteredUsers.map((user) => {
+            const lastMessage = lastMessagesMap[user.id];
+
+            return (
+              <div
+                onClick={() => handleActiveContact(user.id)}
+                className={activeContactId === user.id ? 'chat-user-item active' : 'chat-user-item'}
+                key={user.id}
+              >
+                <img src={user.avatar} alt={user.name} />
+                <div className="chat-user-info" style={{ overflow: 'hidden' }}>
+                  <h4>{user.name}</h4>
+                  {lastMessage && (
+                    <p className='last-message'>
+                      {lastMessage.senderId === 1 ? 'You: ' : ``}
+                      {lastMessage.text}
+                    </p>
+                  )}
+                </div>
+                <div className="chat-user-meta">
+                  {lastMessage && <span>{formatTime(lastMessage.timestamp)}</span>}
+                </div>
               </div>
-              <div className="chat-user-meta">
-                <span>{user.time}</span>
-                {user.unread > 0 && <span className="unread-badge">{user.unread}</span>}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -124,16 +185,52 @@ const ChatPage = () => {
           </div>
         </div>
         <div className="chat-messages">
-          {activeMessages.map(msg => (
-            <div key={msg.id} className={`message ${msg.senderId === 1 ? 'sent' : 'received'}`}>
-              <div className="message-content">
-                {msg.text}
+          {activeMessages.length === 0 ? (
+            <div className="no-messages">
+              No messages yet. Say hello!
+            </div>
+          ) : (
+            activeMessages.map(msg => (
+              <div key={msg.id} className={`message ${msg.senderId === 1 ? 'sent' : 'received'}`}>
+                <div className="message-bubble">
+                  <div className="message-content">
+                    {msg.text}
+                  </div>
+                  <div className="msg-menu-wrap" ref={openMenuId === msg.id ? menuRef : null}>
+                    <button
+                      className="msg-menu-btn"
+                      onClick={() => setOpenMenuId(openMenuId === msg.id ? null : msg.id)}
+                    >
+                      <MoreVertical size={15} />
+                    </button>
+                    {openMenuId === msg.id && (
+                      <div className={`msg-dropdown ${msg.senderId === 1 ? 'sent' : 'received'}`}>
+                        <button onClick={() => { navigator.clipboard.writeText(msg.text); setOpenMenuId(null); }}>
+                          <Copy size={13} /> Copy
+                        </button>
+                        <button className="danger" onClick={() => { deleteMessage(msg.id); setOpenMenuId(null); }}>
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="message-time">
+                  {formatTime(msg.timestamp)}
+                </div>
               </div>
-              <div className="message-time">
-                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            ))
+          )}
+          {isTyping && (
+            <div className="message received">
+              <div className="message-content typing-indicator">
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
               </div>
             </div>
-          ))}
+          )}
+          <div ref={messagesEndRef} />
         </div>
         <form className="chat-input-area" onSubmit={handleSubmit}>
           <input

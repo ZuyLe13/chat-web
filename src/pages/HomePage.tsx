@@ -1,4 +1,4 @@
-const DashboardPage = () => {
+const HomePage = () => {
   return (
     <div className="welcome-banner">
       <h1>Welcome back! 👋</h1>
@@ -6,4 +6,4 @@ const DashboardPage = () => {
   )
 }
 
-export default DashboardPage
+export default HomePage

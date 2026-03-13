@@ -384,7 +384,7 @@ button {
 }
 
 .chat-header {
-  padding: 16px 24px;
+  padding: 15px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -513,13 +513,18 @@ button {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   min-width: 130px;
   overflow: hidden;
 }
 
-.msg-dropdown.sent  { right: 0; }
-.msg-dropdown.received { left: 0; }
+.msg-dropdown.sent {
+  right: 0;
+}
+
+.msg-dropdown.received {
+  left: 0;
+}
 
 .msg-dropdown button {
   width: 100%;
@@ -661,6 +666,16 @@ button {
 }
 
 @keyframes typing-dot {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-  30% { transform: translateY(-6px); opacity: 1; }
+
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
 }

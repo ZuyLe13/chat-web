@@ -1,8 +1,8 @@
 export const routerObject = {
-	// Dashboard Module
-	DASHBOARD: {
-		label: 'Dashboard',
-		path: 'dashboard'
+	// Home Module
+	HOME: {
+		label: 'Home',
+		path: 'home'
 	},
 
 	// Chat Module

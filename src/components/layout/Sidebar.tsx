@@ -1,4 +1,4 @@
-import { LayoutDashboard, MessageSquare } from 'lucide-react';
+import { Home, MessageSquare } from 'lucide-react';
 import { routerObject } from '../../constants/routerObject';
 import type { SidebarMenu } from '../../types/layout';
 import { useLocation } from 'react-router';
@@ -6,8 +6,8 @@ import { useLocation } from 'react-router';
 const sidebarMenus: SidebarMenu[] = [
   {
     name: "Home",
-    icon: LayoutDashboard,
-    path: routerObject.DASHBOARD.path,
+    icon: Home,
+    path: routerObject.HOME.path,
   },
   {
     name: "Chat",

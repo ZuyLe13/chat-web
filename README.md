@@ -1,6 +1,6 @@
 # ChatWeb
 
-A modern, responsive, and feature-rich chat application built with React 19, Vite, and Zustand. ChatWeb offers a premium user experience with real-time interaction simulations, smooth animations, and a sleek UI.
+A modern, responsive chat application built with React, Vite, and Zustand.
 
 ## ✨ Features
 
@@ -10,7 +10,6 @@ A modern, responsive, and feature-rich chat application built with React 19, Vit
     - **Search**: Quickly find users in your contact list.
     - **Copy & Delete**: Core message actions with a intuitive contextual menu.
 - **Responsive Design**: optimized for a variety of screen sizes with a premium Look and Feel.
-- **Premium UI/UX**: Built with modern CSS techniques, glassmorphism, and smooth micro-animations.
 
 ## 🚀 Tech Stack
 
@@ -27,7 +26,7 @@ A modern, responsive, and feature-rich chat application built with React 19, Vit
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (current LTS recommended)
-- `npm` or `yarn`
+- `npm`
 
 ### Installation
 
@@ -64,10 +63,6 @@ The output will be in the `dist/` directory.
 - `src/stores`: Zustand state management.
 - `src/utils`: Helper functions and utilities.
 - `src/types`: TypeScript interfaces and types.
-
-## 📄 License
-
-This project is private and for demonstration purposes.
 
 ---
 

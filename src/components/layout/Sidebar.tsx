@@ -1,4 +1,4 @@
-import { Home, MessageSquare } from 'lucide-react';
+import { Home, MessageSquare, X } from 'lucide-react';
 import { routerObject } from '../../constants/routerObject';
 import type { SidebarMenu } from '../../types/layout';
 import { useLocation } from 'react-router';
@@ -16,12 +16,20 @@ const sidebarMenus: SidebarMenu[] = [
   }
 ]
 
-const Sidebar = () => {
+interface SidebarProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
   const { pathname } = useLocation()
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-logo">
+        <button className="sidebar-close-btn" onClick={() => setIsOpen(false)}>
+          <X size={24} />
+        </button>
         <img
           src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
           alt="User Avatar"
@@ -36,7 +44,7 @@ const Sidebar = () => {
             const path = `/${item.path}`
             const isActive = pathname === path
             return (
-              <li key={item.name} className={isActive ? 'nav-item active' : 'nav-item'}>
+              <li key={item.name} className={isActive ? 'nav-item active' : 'nav-item'} onClick={() => setIsOpen(false)}>
                 <a href={path} className="nav-link">
                   <item.icon size={20} />
                   <span>{item.name}</span>

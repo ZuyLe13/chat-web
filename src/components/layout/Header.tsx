@@ -1,8 +1,15 @@
-import { Bell } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 
-const Header = () => {
+interface HeaderProps {
+  onMenuClick: () => void;
+}
+
+const Header = ({ onMenuClick }: HeaderProps) => {
   return (
     <header className="header">
+      <button className="menu-toggle-btn" onClick={onMenuClick}>
+        <Menu size={24} />
+      </button>
       <div className="header-actions">
         <button className="icon-btn">
           <Bell size={20} />

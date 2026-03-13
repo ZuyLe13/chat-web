@@ -1,10 +1,9 @@
-import { Search, Send, MoreVertical, Phone, Video, Copy, Trash2, X } from 'lucide-react';
+import { Search, Send, MoreVertical, Phone, Video, Copy, Trash2, X, ChevronLeft } from 'lucide-react';
 import { useMessageStore } from '../stores/useMessageStore';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { formatTime } from '../utils/formatTime';
 
 const DUMMY_USERS = [
-  // ... (keep DUMMY_USERS as is)
   { id: 2, name: 'Alice Cooper', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice' },
   { id: 3, name: 'Bob Singer', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob' },
   { id: 4, name: 'Charlie Day', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie' },
@@ -22,6 +21,11 @@ const AUTO_REPLIES = [
   "Absolutely!", "Okay 😄",
 ];
 
+const messageType = {
+  SENT: 'sent',
+  RECEIVED: 'received'
+}
+
 const ChatPage = () => {
   const {
     activeContactId,
@@ -34,6 +38,7 @@ const ChatPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [showChat, setShowChat] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -61,6 +66,7 @@ const ChatPage = () => {
 
   const handleActiveContact = (id: number) => {
     setActiveContact(id)
+    setShowChat(true)
   }
 
   const handleSendMessages = (text: string) => {
@@ -97,7 +103,6 @@ const ChatPage = () => {
       (msg.senderId === activeContactId && msg.receiverId === 1)
     ), [messages, activeContactId]);
 
-  // Performance: memoize last messages search to avoid N^2 in sidebar render
   const lastMessagesMap = useMemo(() => {
     const map: Record<number, any> = {};
     messages.forEach(msg => {
@@ -122,7 +127,7 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="chat-container">
+    <div className={`chat-container ${showChat ? 'show-chat' : ''}`}>
       {/* List User / Left Section */}
       <div className="chat-sidebar">
         <div className="chat-search">
@@ -172,7 +177,10 @@ const ChatPage = () => {
       <div className="chat-main">
         <div className="chat-header">
           <div className="chat-header-info">
-            <img src={DUMMY_USERS.find(user => user.id === activeContactId)?.avatar} alt="Alice Cooper" />
+            <button className="chat-back-btn" onClick={() => setShowChat(false)}>
+              <ChevronLeft size={24} />
+            </button>
+            <img src={DUMMY_USERS.find(user => user.id === activeContactId)?.avatar} alt="Active Contact" />
             <div>
               <h3>{DUMMY_USERS.find(user => user.id === activeContactId)?.name}</h3>
               <span className="online-status">Online</span>
@@ -191,7 +199,7 @@ const ChatPage = () => {
             </div>
           ) : (
             activeMessages.map(msg => (
-              <div key={msg.id} className={`message ${msg.senderId === 1 ? 'sent' : 'received'}`}>
+              <div key={msg.id} className={`message ${msg.senderId === 1 ? messageType.SENT : messageType.RECEIVED}`}>
                 <div className="message-bubble">
                   <div className="message-content">
                     {msg.text}
@@ -204,7 +212,7 @@ const ChatPage = () => {
                       <MoreVertical size={15} />
                     </button>
                     {openMenuId === msg.id && (
-                      <div className={`msg-dropdown ${msg.senderId === 1 ? 'sent' : 'received'}`}>
+                      <div className={`msg-dropdown ${msg.senderId === 1 ? messageType.SENT : messageType.RECEIVED}`}>
                         <button onClick={() => { navigator.clipboard.writeText(msg.text); setOpenMenuId(null); }}>
                           <Copy size={13} /> Copy
                         </button>
